@@ -54,12 +54,12 @@ Wordpress и Drupal скачиваются из интернета, берутс
  
 # Vagrantfile:
   
-## переменные
-LOCAL_HOST_PORT = "45678" #создаем переменную для проброса порта
-FRIENDLY_VM_NAME = "skillbox - web server v2" #имя виртуальной машины
+### переменные
+LOCAL_HOST_PORT = "45678"                                #создаем переменную для проброса порта
+FRIENDLY_VM_NAME = "skillbox - web server v2"            #имя виртуальной машины
  
 ## stage 0
-## настраиваем виртуальную машину
+### настраиваем виртуальную машину
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"    #ставим ubuntu 20.04 x64
   config.vm.hostname = "web.local"    #задаем имя виртуальной машины
