@@ -115,7 +115,7 @@ Vagrant.configure("2") do |config|
   sudo ln -sfT /media/sf_sync_config_folder /sync_config_folder 
  SHELL
  
-## stage3
+## stage 3
 #устанавливаем необходимые пакеты и производим их настройку
 #передадим переменную "LOCAL_HOST_PORT" в shell
  config.vm.provision :shell, env: {"LOCAL_HOST_PORT" => LOCAL_HOST_PORT}, inline: <<-SHELL
