@@ -1,9 +1,9 @@
 # Руководство по настройке и установке на виртуальную машину Wordpress, Drupal и необходимое программное обеспечение.
  
-## а. Доступ к "Wordpress" и "Drupal" осуществляется по вводу логина и пароля с редиректом, который отрабатывает по имени пользователя     
+##  Доступ к "Wordpress" и "Drupal" осуществляется по вводу логина и пароля с редиректом, который отрабатывает по имени пользователя     
 Реквизиты будут указаны в конфце работы команды "vagrant up"
-## б. Логины, пароли и имена баз данных генерируются во время работы скриптов
-## в. Общая папка доступна, даже если виртуальная машина была выключена или перезагружена
+##  Логины, пароли и имена баз данных генерируются во время работы скриптов
+##  Общая папка доступна, даже если виртуальная машина была выключена или перезагружена
  
 Для РФ есть ряд ограничений, поэтому используем Tor или VPN.
 Wordpress и Drupal скачиваются из интернета, берутся актуальные версии.
@@ -55,55 +55,55 @@ Wordpress и Drupal скачиваются из интернета, берутс
 # Vagrantfile:
   
 ### переменные
-LOCAL_HOST_PORT = "45678"                                #создаем переменную для проброса порта
-FRIENDLY_VM_NAME = "skillbox - web server v2"            #имя виртуальной машины
+    LOCAL_HOST_PORT = "45678"                                #создаем переменную для проброса порта
+    FRIENDLY_VM_NAME = "skillbox - web server v2"            #имя виртуальной машины
  
 ## stage 0
 ### настраиваем виртуальную машину
-Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/focal64"    #ставим ubuntu 20.04 x64
-  config.vm.hostname = "web.local"    #задаем имя виртуальной машины
-  config.vm.network "forwarded_port", guest:80, host:LOCAL_HOST_PORT    #указываем порт для проброса с хостовой на виртуальную
-  config.vm.synced_folder "./sync_config_folder", "/sync_config_folder", id: "sync_config_folder", automount: true #папка с конфигами для wordpress и drupal. при смене                                                                                   имени, необходимо поменять его на новое в поле id и в 59 и 60 строке внести изменения
-  config.vm.provision "shell", inline: "usermod -a -G vboxsf vagrant"   #добавляем пользователя vagrant в группу vboxsf для доступа к папке
-  config.vm.network "public_network"                                    #добавляем сетевой интерфейс, который смотрит в локальную сеть
-  config.vm.boot_timeout = 1800
+    Vagrant.configure("2") do |config|
+     config.vm.box = "ubuntu/focal64"    #ставим ubuntu 20.04 x64
+     config.vm.hostname = "web.local"    #задаем имя виртуальной машины
+     config.vm.network "forwarded_port", guest:80, host:LOCAL_HOST_PORT    #указываем порт для проброса с хостовой на виртуальную
+     config.vm.synced_folder "./sync_config_folder", "/sync_config_folder", id: "sync_config_folder", automount: true #папка с конфигами для wordpress и drupal. при смене                                                                                   имени, необходимо поменять его на новое в поле id и в 59 и 60 строке внести изменения
+     config.vm.provision "shell", inline: "usermod -a -G vboxsf vagrant"   #добавляем пользователя vagrant в группу vboxsf для доступа к папке
+     config.vm.network "public_network"                                    #добавляем сетевой интерфейс, который смотрит в локальную сеть
+     config.vm.boot_timeout = 1800
  
-  config.vm.provider "virtualbox" do |v|
-   v.name = FRIENDLY_VM_NAME                                            #понятное имя виртуальной машины в virtualbox
-   v.memory = 4096                                                      #изменить кол-во памяти
-   v.cpus = 4                                                           #изменить кол-во cpu
-   v.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]           #тип провайдера виртуализации                                                            
+     config.vm.provider "virtualbox" do |v|
+     v.name = FRIENDLY_VM_NAME                                            #понятное имя виртуальной машины в virtualbox
+     v.memory = 4096                                                      #изменить кол-во памяти
+     v.cpus = 4                                                           #изменить кол-во cpu
+     v.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]           #тип провайдера виртуализации                                                            
 ## вначале в vagrant'e надо создать пустой dvd'rom и только потом в него можно смонтировать образ
-   v.customize ["storageattach", :id, "--storagectl", "IDE", "--port", "1", "--device", "1",
+     v.customize ["storageattach", :id, "--storagectl", "IDE", "--port", "1", "--device", "1",
                "--type", "dvddrive", "--mtype", "readonly", "--medium", "emptydrive"]
 ## смонтируем диск VBoxLinuxAdditions.iso для последующей его установки
-   v.customize ["storageattach", :id, "--storagectl", "IDE", "--port", "1", "--device", "1",
+     v.customize ["storageattach", :id, "--storagectl", "IDE", "--port", "1", "--device", "1",
                "--type", "dvddrive", "--mtype", "readonly", "--medium", "additions", "--forceunmount"]
-  end
+     end
  
 ## stage 1
 ## устанавливаем, обновления и чистим систему
- config.vm.provision :shell, inline: <<-SHELL
-  echo "Stage 1"
-  sudo apt update                                                        #обновим информацию о пакетах
-  sudo apt upgrade -y                                                    #обновим пакеты
+   config.vm.provision :shell, inline: <<-SHELL
+   echo "Stage 1"
+   sudo apt update                                                        #обновим информацию о пакетах
+   sudo apt upgrade -y                                                    #обновим пакеты
  
-  sudo apt-get install linux-headers-$(uname -r) build-essential dkms -y #ставим VBoxLinuxAdditions
-  sudo mkdir -p /mnt/cdrom
-  sudo mount /dev/cdrom /mnt/cdrom
-  cd /mnt/cdrom
-  echo y | sudo sh ./VBoxLinuxAdditions.run
+   sudo apt-get install linux-headers-$(uname -r) build-essential dkms -y #ставим VBoxLinuxAdditions
+   sudo mkdir -p /mnt/cdrom
+   sudo mount /dev/cdrom /mnt/cdrom
+   cd /mnt/cdrom
+   echo y | sudo sh ./VBoxLinuxAdditions.run
   
-  sudo apt autoclean                                                     #удалить неиспользуемые пакеты из кэша
-  sudo apt clean                                                         #очистка кэша
-  sudo apt autoremove                                                    #удаление ненужных зависимостей
-  sudo apt autoremove --purge
-  sudo update-grub2                                                      #обновим загрузчик
+   sudo apt autoclean                                                     #удалить неиспользуемые пакеты из кэша
+   sudo apt clean                                                         #очистка кэша
+   sudo apt autoremove                                                    #удаление ненужных зависимостей
+   sudo apt autoremove --purge
+   sudo update-grub2                                                      #обновим загрузчик
  SHELL
  
- #перезагружаем виртуальную машину
- config.vm.provision :shell do |shell|                                                                                                    
+ ### перезагружаем виртуальную машину
+  config.vm.provision :shell do |shell|                                                                                                    
   shell.privileged = true
   shell.reboot = true
  end
