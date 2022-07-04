@@ -100,7 +100,7 @@
     sudo apt autoremove                                                                                                 #удаление ненужных зависимостей
     sudo apt autoremove --purge
     sudo update-grub2                                                                                                   #обновим загрузчик
-  SHELL
+    SHELL
  
  ### перезагружаем виртуальную машину
   config.vm.provision :shell do |shell|                                                                                                    
