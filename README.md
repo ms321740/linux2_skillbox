@@ -109,182 +109,182 @@
   end
  
 ## stage 2
-## линкуем шарную папку, даже после перезагрузки vm
- config.vm.provision :shell, inline: <<-SHELL
-  echo "Stage 2"
-  sudo rm -rf /sync_config_folder                                                                                      #линкуем папку для доступа к ней после перезагрузки
-  sudo ln -sfT /media/sf_sync_config_folder /sync_config_folder 
- SHELL
+### линкуем шарную папку, даже после перезагрузки vm
+  config.vm.provision :shell, inline: <<-SHELL
+   echo "Stage 2"
+   sudo rm -rf /sync_config_folder                                                                                      #линкуем папку для доступа к ней после перезагрузки
+   sudo ln -sfT /media/sf_sync_config_folder /sync_config_folder 
+  SHELL
  
 ## stage 3
 ### устанавливаем необходимые пакеты и производим их настройку
 ### передадим переменную "LOCAL_HOST_PORT" в shell
- config.vm.provision :shell, env: {"LOCAL_HOST_PORT" => LOCAL_HOST_PORT}, inline: <<-SHELL
-  echo "Stage 3"
-  sudo apt install -y apache2                                                                                         #ставим apache
-  sudo apt install -y libapache2-mod-php                                                                              #ставим доп. модули для apache
-  sudo apt install -y php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl php-zip php-sqlite3 php-cli
-  sudo apt install -y php-mysql
-  sudo apt install -y mysql-server                                                                                    #ставим базу данных
-  sudo a2enmod rewrite                                                                                                #включим модуль rewrite для apache
+  config.vm.provision :shell, env: {"LOCAL_HOST_PORT" => LOCAL_HOST_PORT}, inline: <<-SHELL
+   echo "Stage 3"
+   sudo apt install -y apache2                                                                                         #ставим apache
+   sudo apt install -y libapache2-mod-php                                                                              #ставим доп. модули для apache
+   sudo apt install -y php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl php-zip php-sqlite3 php-cli
+   sudo apt install -y php-mysql
+   sudo apt install -y mysql-server                                                                                    #ставим базу данных
+   sudo a2enmod rewrite                                                                                                #включим модуль rewrite для apache
  
-  sudo mkdir /download_content                                                                                        #создаем папку под скачиваемые файлы
-  wget -O /download_content/wordpress_latest.tar.gz https://wordpress.org/latest.tar.gz                               #скачиваем wordpress (актуальный релиз)
-  tar -xzf /download_content/wordpress_latest.tar.gz -C /download_content                                             #распаковываем
+   sudo mkdir /download_content                                                                                        #создаем папку под скачиваемые файлы
+   wget -O /download_content/wordpress_latest.tar.gz https://wordpress.org/latest.tar.gz                               #скачиваем wordpress (актуальный релиз)
+   tar -xzf /download_content/wordpress_latest.tar.gz -C /download_content                                             #распаковываем
  
-  wget -O /download_content/drupal_latest.tar.gz https://www.drupal.org/download-latest/tar.gz                        #скачиваем drupal (актуальный релиз)
-  tar -xzf /download_content/drupal_latest.tar.gz -C /download_content                                                #распаковываем
-  mv /download_content/drupal-* /download_content/drupal                                                              #переименуем папку
+   wget -O /download_content/drupal_latest.tar.gz https://www.drupal.org/download-latest/tar.gz                        #скачиваем drupal (актуальный релиз)
+   tar -xzf /download_content/drupal_latest.tar.gz -C /download_content                                                #распаковываем
+   mv /download_content/drupal-* /download_content/drupal                                                              #переименуем папку
 ## stage 4 
 ### создаем переменные для Wordpress
-  myWordpressMysqlUser=wp_user_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -12 | head -n1)                          #имя пользователя mysql для wodpress (имя пользователя не должно быть больше 32 символов)
-  myWordpressMysqlDbName=wp_db_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                         #имя базы данных mysql для wordpress
-  myWordpressMysqlPass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                                    #пароль пользователя mysql для wordpress
-  myWordpressApache2Pass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w15 | head -n1)                                  #пароль пользователя от вэб сервера apache
+   myWordpressMysqlUser=wp_user_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -12 | head -n1)                          #имя пользователя mysql для wodpress (имя пользователя не должно быть больше 32 символов)
+   myWordpressMysqlDbName=wp_db_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                         #имя базы данных mysql для wordpress
+   myWordpressMysqlPass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                                    #пароль пользователя mysql для wordpress
+   myWordpressApache2Pass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w15 | head -n1)                                  #пароль пользователя от вэб сервера apache
  
 ### создаем переменные для Drupal
-  myDrupalMysqlUser=drupal_user_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w12 | head -n1)                        #имя пользователя mysql для wodpress
-  myDrupalMysqlDbName=drupal_db_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                        #имя базы данных mysql для wordpress
-  myDrupalMysqlPass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                                       #пароль пользователя mysql для wordpress
-  myDrupalApache2Pass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w15 | head -n1)                                     #пароль пользователя от вэб сервера apache
+   myDrupalMysqlUser=drupal_user_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w12 | head -n1)                        #имя пользователя mysql для wodpress
+   myDrupalMysqlDbName=drupal_db_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                        #имя базы данных mysql для wordpress
+   myDrupalMysqlPass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                                       #пароль пользователя mysql для wordpress
+   myDrupalApache2Pass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w15 | head -n1)                                     #пароль пользователя от вэб сервера apache
  
 ### создаем базы данных mysql
-  mysql -u root -e "CREATE DATABASE $myWordpressMysqlDbName DEFAULT CHARACTER SET utf8;"                              #создаем базу данных для wordpress
-  mysql -u root -e "create user $myWordpressMysqlUser@'localhost' identified by '$myWordpressMysqlPass';"             #создаем пользователя в базе данных для wordpress
-  mysql -u root -e "grant all on $myWordpressMysqlDbName.* to $myWordpressMysqlUser@'localhost';"                     #разрешаем ему подключение с localhost
-  mysql -u root -e "flush privileges;"
+   mysql -u root -e "CREATE DATABASE $myWordpressMysqlDbName DEFAULT CHARACTER SET utf8;"                              #создаем базу данных для wordpress
+   mysql -u root -e "create user $myWordpressMysqlUser@'localhost' identified by '$myWordpressMysqlPass';"             #создаем пользователя в базе данных для wordpress
+   mysql -u root -e "grant all on $myWordpressMysqlDbName.* to $myWordpressMysqlUser@'localhost';"                     #разрешаем ему подключение с localhost
+   mysql -u root -e "flush privileges;"
  
-  mysql -u root -e "CREATE DATABASE $myDrupalMysqlDbName DEFAULT CHARACTER SET utf8;"                                 #создаем базу данных для drupal
-  mysql -u root -e "create user $myDrupalMysqlUser@'localhost' identified by '$myDrupalMysqlPass';"                   #создаем пользователя в базе данных для drupal
-  mysql -u root -e "grant all on $myDrupalMysqlDbName.* to $myDrupalMysqlUser@'localhost';"                           #разрешаем ему подключение с localhost
-  mysql -u root -e "flush privileges;"
+   mysql -u root -e "CREATE DATABASE $myDrupalMysqlDbName DEFAULT CHARACTER SET utf8;"                                 #создаем базу данных для drupal
+   mysql -u root -e "create user $myDrupalMysqlUser@'localhost' identified by '$myDrupalMysqlPass';"                   #создаем пользователя в базе данных для drupal
+   mysql -u root -e "grant all on $myDrupalMysqlDbName.* to $myDrupalMysqlUser@'localhost';"                           #разрешаем ему подключение с localhost
+   mysql -u root -e "flush privileges;"
  
 ### переносим папки сайтов
 ### wordpress
-  mv /download_content/wordpress /var/www/wordpress                                                                   #переместим wordpress в папку хоста
-  chown -R root:www-data /var/www/wordpress/                                                                          #дадим права пользователю www-data на папку wordpress (пользователь www-data - дефолтный пользователь, под которым запущен php)
+   mv /download_content/wordpress /var/www/wordpress                                                                   #переместим wordpress в папку хоста
+   chown -R root:www-data /var/www/wordpress/                                                                          #дадим права пользователю www-data на папку wordpress (пользователь www-data - дефолтный пользователь, под которым запущен php)
  
 ### drupal
-  sudo mkdir /var/www/drupal
-  cd /download_content
+   sudo mkdir /var/www/drupal
+   cd /download_content
 ### переместим drupal в папку хоста
-  sudo mv drupal/* drupal/.htaccess drupal/.csslintrc drupal/.editorconfig drupal/.eslintignore drupal/.eslintrc.json drupal/.gitattributes /var/www/drupal
+   sudo mv drupal/* drupal/.htaccess drupal/.csslintrc drupal/.editorconfig drupal/.eslintignore drupal/.eslintrc.json drupal/.gitattributes /var/www/drupal
                                                                                                                        
 ### почистим за собой
-  rm -rf /download_content
- 
+   rm -rf /download_content
+  
 ### настраиваем хостинг
 ### загружаем пароли для пользователей Wordpress и Drupal в htpasswd для apache
-  echo "$myWordpressApache2Pass" | htpasswd -c -i /etc/apache2/.htpasswd Wordpress
-  echo "$myDrupalApache2Pass" | htpasswd -i /etc/apache2/.htpasswd Drupal
+   echo "$myWordpressApache2Pass" | htpasswd -c -i /etc/apache2/.htpasswd Wordpress
+   echo "$myDrupalApache2Pass" | htpasswd -i /etc/apache2/.htpasswd Drupal
  
-  rm /etc/apache2/sites-enabled/000-default.conf                                                                       #удалим симлинк на дефолтовый конфиг
+   rm /etc/apache2/sites-enabled/000-default.conf                                                                       #удалим симлинк на дефолтовый конфиг
  
-## установим наш конфиг для apache
-  cp /sync_config_folder/apache/001_default.conf /etc/apache2/sites-available/001_default.conf                          #скопируем подготовленный конфиг для wordpress из общей папки "sync_config_folder/apache"
-  chmod -X /etc/apache2/sites-available/001_default.conf                                                                #уберем артибут исполняемого файла
-  ln -s /etc/apache2/sites-available/001_default.conf /etc/apache2/sites-enabled/001_default.conf                       #сделаем симлинк для конфигурационного файла, активные конфигурации лежат в папке "sites-enabled"
+### установим наш конфиг для apache
+   cp /sync_config_folder/apache/001_default.conf /etc/apache2/sites-available/001_default.conf                          #скопируем подготовленный конфиг для wordpress из общей папки "sync_config_folder/apache"
+   chmod -X /etc/apache2/sites-available/001_default.conf                                                                #уберем артибут исполняемого файла
+   ln -s /etc/apache2/sites-available/001_default.conf /etc/apache2/sites-enabled/001_default.conf                       #сделаем симлинк для конфигурационного файла, активные конфигурации лежат в папке "sites-enabled"
  
-## подготовим конфигурационный фвйл для wordpress
+### подготовим конфигурационный фвйл для wordpress
   cp /sync_config_folder/wordpress/wp-config.php /var/www/wordpress/wp-config.php                                       #копируем конфиг wordpress с преднастройками (шаблон)
   chmod -X /var/www/wordpress/wp-config.php                                                                             #уберем артибут исполняемого файла
   wget -q -O- https://api.wordpress.org/secret-key/1.1/salt/ | grep 'define' | head >> /var/www/wordpress/wp-config.php #получаем ключи и записываем в конфигурационный файл wordpress
   chown -R root:www-data /var/www/wordpress/wp-config.php                                                               #дадим права пользователю www-data на конфиг wordpress
  
 ### заменим переменные подключения к базе даннах на наши значения для wordpress
-  sed -i 's/%example_db_name%/'$myWordpressMysqlDbName'/g' /var/www/wordpress/wp-config.php
-  sed -i 's/%example_db_user_name%/'$myWordpressMysqlUser'/g' /var/www/wordpress/wp-config.php
-  sed -i 's/%example_db_password%/'$myWordpressMysqlPass'/g' /var/www/wordpress/wp-config.php
+   sed -i 's/%example_db_name%/'$myWordpressMysqlDbName'/g' /var/www/wordpress/wp-config.php
+   sed -i 's/%example_db_user_name%/'$myWordpressMysqlUser'/g' /var/www/wordpress/wp-config.php
+   sed -i 's/%example_db_password%/'$myWordpressMysqlPass'/g' /var/www/wordpress/wp-config.php
  
 ### подготовим конфигурационный фвйл для drupal
-  sudo cp /var/www/drupal/sites/default/default.settings.php /var/www/drupal/sites/default/settings.php
-  cat /sync_config_folder/drupal/settings.php > /var/www/drupal/sites/default/settings.php                              #загрузим подготовленный конфиг
-  chown -R root:www-data /var/www/drupal/                                                                               #дадим права пользователю www-data на папку drupal (пользователь www-data - дефолтный пользователь, под которым запущен php)
-  chmod -R 755 /var/www/drupal/                                                                                         #выставим права на папку drupal
+   sudo cp /var/www/drupal/sites/default/default.settings.php /var/www/drupal/sites/default/settings.php
+   cat /sync_config_folder/drupal/settings.php > /var/www/drupal/sites/default/settings.php                              #загрузим подготовленный конфиг
+   chown -R root:www-data /var/www/drupal/                                                                               #дадим права пользователю www-data на папку drupal (пользователь www-data - дефолтный пользователь, под которым запущен php)
+    chmod -R 755 /var/www/drupal/                                                                                         #выставим права на папку drupal
   sudo mkdir /var/www/drupal/sites/default/files                                                                         #создадим необходимые файла, папки и дадим им права
-  sudo mkdir /var/www/drupal/sites/default/files/translations
-  chmod a+w /var/www/drupal/sites/default/settings.php
-  chmod a+w /var/www/drupal/sites/default/files
-  chmod a+w /var/www/drupal/sites/default/files/translations
+   sudo mkdir /var/www/drupal/sites/default/files/translations
+   chmod a+w /var/www/drupal/sites/default/settings.php
+   chmod a+w /var/www/drupal/sites/default/files
+   chmod a+w /var/www/drupal/sites/default/files/translations
  
 ### заменим переменные подключения к базе даннах на наши значения для drupal
-  sed -i 's/%example_db_name%/'$myDrupalMysqlDbName'/g' /var/www/drupal/sites/default/settings.php
-  sed -i 's/%example_db_user_name%/'$myDrupalMysqlUser'/g' /var/www/drupal/sites/default/settings.php
-  sed -i 's/%example_db_password%/'$myDrupalMysqlPass'/g' /var/www/drupal/sites/default/settings.php
+   sed -i 's/%example_db_name%/'$myDrupalMysqlDbName'/g' /var/www/drupal/sites/default/settings.php
+   sed -i 's/%example_db_user_name%/'$myDrupalMysqlUser'/g' /var/www/drupal/sites/default/settings.php
+   sed -i 's/%example_db_password%/'$myDrupalMysqlPass'/g' /var/www/drupal/sites/default/settings.php
  
 ### готовим файл с информацией о нашей vm
-echo "echo in info file"
-echo > /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo __________________________________________________________________________________________ >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo Skillbox intensive homework - Web sites Wordpress and Drupal>> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo Available ip address on VM: %ip_address_list% >> /vagrant_up_info.txt
-echo Sites available on localhost: http://localhost:$LOCAL_HOST_PORT >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo Drupal MySQL database name: $myDrupalMysqlDbName >> /vagrant_up_info.txt
-echo Drupal MySQL database user: $myDrupalMysqlUser >> /vagrant_up_info.txt
-echo Drupal MySQL database password: $myDrupalMysqlPass >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo Wordpress MySQL database name: $myWordpressMysqlDbName >> /vagrant_up_info.txt
-echo Wordpress MySQL database user: $myWordpressMysqlUser >> /vagrant_up_info.txt
-echo Wordpress MySQL database password: $myWordpressMysqlPass >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo Apache user for Drupal instants: Drupal >> /vagrant_up_info.txt
-echo Apache user password for Drupal instants: $myDrupalApache2Pass >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo Apache user for Wordpress instants: Wordpress >> /vagrant_up_info.txt
-echo Apache user password for Wordpress instants: $myWordpressApache2Pass >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo __________________________________________________________________________________________ >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
-echo >> /vagrant_up_info.txt
- SHELL
+  echo "echo in info file"
+  echo > /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo __________________________________________________________________________________________ >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo Skillbox intensive homework - Web sites Wordpress and Drupal>> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo Available ip address on VM: %ip_address_list% >> /vagrant_up_info.txt
+  echo Sites available on localhost: http://localhost:$LOCAL_HOST_PORT >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo Drupal MySQL database name: $myDrupalMysqlDbName >> /vagrant_up_info.txt
+  echo Drupal MySQL database user: $myDrupalMysqlUser >> /vagrant_up_info.txt
+  echo Drupal MySQL database password: $myDrupalMysqlPass >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo Wordpress MySQL database name: $myWordpressMysqlDbName >> /vagrant_up_info.txt
+  echo Wordpress MySQL database user: $myWordpressMysqlUser >> /vagrant_up_info.txt
+  echo Wordpress MySQL database password: $myWordpressMysqlPass >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo Apache user for Drupal instants: Drupal >> /vagrant_up_info.txt
+  echo Apache user password for Drupal instants: $myDrupalApache2Pass >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo Apache user for Wordpress instants: Wordpress >> /vagrant_up_info.txt
+  echo Apache user password for Wordpress instants: $myWordpressApache2Pass >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo __________________________________________________________________________________________ >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  echo >> /vagrant_up_info.txt
+  SHELL
  
 ### перезагружаем виртуальную машину
-  config.vm.provision :shell do |shell|                                                                                                    
-   shell.privileged = true
-   shell.reboot = true
-  end
+   config.vm.provision :shell do |shell|                                                                                                    
+    shell.privileged = true
+    shell.reboot = true
+   end
  
 ## stage 5
 ### выводим сообщение после окончания работы скрипта
-  config.vm.provision "shell", inline: <<-SHELL
-   sed -i 's/%ip_address_list%/'"$(hostname -I)"'/g' /vagrant_up_info.txt
-   cat /vagrant_up_info.txt
-  SHELL
+   config.vm.provision "shell", inline: <<-SHELL
+    sed -i 's/%ip_address_list%/'"$(hostname -I)"'/g' /vagrant_up_info.txt
+    cat /vagrant_up_info.txt
+   SHELL
  
 ### stage 6
-  config.vm.post_up_message = <<-HEREDOC
+   config.vm.post_up_message = <<-HEREDOC
+  
+   VM info file after config: /vagrant_up_info.txt
  
-  VM info file after config: /vagrant_up_info.txt
- 
-  p.s. 1. не успел решить вопрос с "php core/scripts/drupal quick-start"
-       2. не успел победить ввод пароля от базы данных, при настройке
+    p.s. 1. не успел решить вопрос с "php core/scripts/drupal quick-start"
+         2. не успел победить ввод пароля от базы данных, при настройке
           думаю это отпадет, когда решу 1 пункт
  
  
-  HEREDOC
+   HEREDOC
  end
