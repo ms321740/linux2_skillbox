@@ -54,12 +54,12 @@ Wordpress и Drupal скачиваются из интернета, берутс
  
 # Vagrantfile:
   
-#переменные
+## переменные
 LOCAL_HOST_PORT = "45678" #создаем переменную для проброса порта
 FRIENDLY_VM_NAME = "skillbox - web server v2" #имя виртуальной машины
  
 ## stage 0
-#настраиваем виртуальную машину
+## настраиваем виртуальную машину
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"    #ставим ubuntu 20.04 x64
   config.vm.hostname = "web.local"    #задаем имя виртуальной машины
@@ -73,16 +73,17 @@ Vagrant.configure("2") do |config|
    v.name = FRIENDLY_VM_NAME                                            #понятное имя виртуальной машины в virtualbox
    v.memory = 4096                                                      #изменить кол-во памяти
    v.cpus = 4                                                           #изменить кол-во cpu
-   v.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]           #тип провайдера виртуализации                                                             #вначале в vagrant'e надо создать пустой dvd'rom и только потом в него можно смонтировать образ
+   v.customize ["modifyvm", :id, "--paravirtprovider", "kvm"]           #тип провайдера виртуализации                                                            
+## вначале в vagrant'e надо создать пустой dvd'rom и только потом в него можно смонтировать образ
    v.customize ["storageattach", :id, "--storagectl", "IDE", "--port", "1", "--device", "1",
                "--type", "dvddrive", "--mtype", "readonly", "--medium", "emptydrive"]
-#смонтируем диск VBoxLinuxAdditions.iso для последующей его установки
+## смонтируем диск VBoxLinuxAdditions.iso для последующей его установки
    v.customize ["storageattach", :id, "--storagectl", "IDE", "--port", "1", "--device", "1",
                "--type", "dvddrive", "--mtype", "readonly", "--medium", "additions", "--forceunmount"]
   end
  
 ## stage 1
-#устанавливаем, обновления и чистим систему
+## устанавливаем, обновления и чистим систему
  config.vm.provision :shell, inline: <<-SHELL
   echo "Stage 1"
   sudo apt update                                                        #обновим информацию о пакетах
@@ -108,7 +109,7 @@ Vagrant.configure("2") do |config|
  end
  
 ## stage 2
-#линкуем шарную папку, даже после перезагрузки vm
+## линкуем шарную папку, даже после перезагрузки vm
  config.vm.provision :shell, inline: <<-SHELL
   echo "Stage 2"
   sudo rm -rf /sync_config_folder                                        #линкуем папку для доступа к ней после перезагрузки
@@ -116,10 +117,10 @@ Vagrant.configure("2") do |config|
  SHELL
  
 ## stage 3
-#устанавливаем необходимые пакеты и производим их настройку
-#передадим переменную "LOCAL_HOST_PORT" в shell
+## устанавливаем необходимые пакеты и производим их настройку
+## передадим переменную "LOCAL_HOST_PORT" в shell
  config.vm.provision :shell, env: {"LOCAL_HOST_PORT" => LOCAL_HOST_PORT}, inline: <<-SHELL
-#ставим пакеты
+## ставим пакеты
   echo "Stage 3"
   sudo apt install -y apache2                                            #ставим apache
   sudo apt install -y libapache2-mod-php                                 #ставим доп. модули для apache
@@ -136,19 +137,19 @@ Vagrant.configure("2") do |config|
   tar -xzf /download_content/drupal_latest.tar.gz -C /download_content                         #распаковываем
   mv /download_content/drupal-* /download_content/drupal                                       #переименуем папку
 ## stage 4 
-#создаем переменные для Wordpress
+## создаем переменные для Wordpress
   myWordpressMysqlUser=wp_user_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -12 | head -n1)   #имя пользователя mysql для wodpress (имя пользователя не должно быть                                                                                                  больше 32 символов)
   myWordpressMysqlDbName=wp_db_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)  #имя базы данных mysql для wordpress
   myWordpressMysqlPass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)             #пароль пользователя mysql для wordpress
   myWordpressApache2Pass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w15 | head -n1)           #пароль пользователя от вэб сервера apache
  
-#создаем переменные для Drupal
+## создаем переменные для Drupal
   myDrupalMysqlUser=drupal_user_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w12 | head -n1) #имя пользователя mysql для wodpress
   myDrupalMysqlDbName=drupal_db_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1) #имя базы данных mysql для wordpress
   myDrupalMysqlPass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)                #пароль пользователя mysql для wordpress
   myDrupalApache2Pass=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w15 | head -n1)              #пароль пользователя от вэб сервера apache
  
-#создаем базы данных mysql
+## создаем базы данных mysql
   mysql -u root -e "CREATE DATABASE $myWordpressMysqlDbName DEFAULT CHARACTER SET utf8;"       #создаем базу данных для wordpress
   mysql -u root -e "create user $myWordpressMysqlUser@'localhost' identified by '$myWordpressMysqlPass';" #создаем пользователя в базе данных для wordpress
   mysql -u root -e "grant all on $myWordpressMysqlDbName.* to $myWordpressMysqlUser@'localhost';"         #разрешаем ему подключение с localhost
@@ -159,43 +160,43 @@ Vagrant.configure("2") do |config|
   mysql -u root -e "grant all on $myDrupalMysqlDbName.* to $myDrupalMysqlUser@'localhost';"               #разрешаем ему подключение с localhost
   mysql -u root -e "flush privileges;"
  
-#переносим папки сайтов
-#wordpress
+## переносим папки сайтов
+## wordpress
   mv /download_content/wordpress /var/www/wordpress  #переместим wordpress в папку хоста
   chown -R root:www-data /var/www/wordpress/         #дадим права пользователю www-data на папку wordpress (пользователь www-data - дефолтный пользователь, под которым                                                      запущен php)
  
-#drupal
+## drupal
   sudo mkdir /var/www/drupal
   cd /download_content
   sudo mv drupal/* drupal/.htaccess drupal/.csslintrc drupal/.editorconfig drupal/.eslintignore drupal/.eslintrc.json drupal/.gitattributes /var/www/drupal #переместим                                                                                                                                                             drupal в                                                                                                                                                               папку хоста
  
-#почистим за собой
+## почистим за собой
 rm -rf /download_content
  
-#настраиваем хостинг
-#загружаем пароли для пользователей Wordpress и Drupal в htpasswd для apache
+## настраиваем хостинг
+## загружаем пароли для пользователей Wordpress и Drupal в htpasswd для apache
   echo "$myWordpressApache2Pass" | htpasswd -c -i /etc/apache2/.htpasswd Wordpress
   echo "$myDrupalApache2Pass" | htpasswd -i /etc/apache2/.htpasswd Drupal
  
   rm /etc/apache2/sites-enabled/000-default.conf   #удалим симлинк на дефолтовый конфиг
  
-#установим наш конфиг для apache
+## установим наш конфиг для apache
   cp /sync_config_folder/apache/001_default.conf /etc/apache2/sites-available/001_default.conf    #скопируем подготовленный конфиг для wordpress из общей папки "sync_config_folder/apache"
   chmod -X /etc/apache2/sites-available/001_default.conf                                          #уберем артибут исполняемого файла
   ln -s /etc/apache2/sites-available/001_default.conf /etc/apache2/sites-enabled/001_default.conf #сделаем симлинк для конфигурационного файла, активные конфигурации лежат в папке "sites-enabled"
  
-#подготовим конфигурационный фвйл для wordpress
+## подготовим конфигурационный фвйл для wordpress
   cp /sync_config_folder/wordpress/wp-config.php /var/www/wordpress/wp-config.php  #копируем конфиг wordpress с преднастройками (шаблон)
   chmod -X /var/www/wordpress/wp-config.php                                        #уберем артибут исполняемого файла
   wget -q -O- https://api.wordpress.org/secret-key/1.1/salt/ | grep 'define' | head >> /var/www/wordpress/wp-config.php #получаем ключи и записываем в конфигурационный                                                                                                                         файл wordpress
   chown -R root:www-data /var/www/wordpress/wp-config.php                          #дадим права пользователю www-data на конфиг wordpress
  
-#заменим переменные подключения к базе даннах на наши значения для wordpress
+## заменим переменные подключения к базе даннах на наши значения для wordpress
   sed -i 's/%example_db_name%/'$myWordpressMysqlDbName'/g' /var/www/wordpress/wp-config.php
   sed -i 's/%example_db_user_name%/'$myWordpressMysqlUser'/g' /var/www/wordpress/wp-config.php
   sed -i 's/%example_db_password%/'$myWordpressMysqlPass'/g' /var/www/wordpress/wp-config.php
  
-#подготовим конфигурационный фвйл для drupal
+## подготовим конфигурационный фвйл для drupal
   sudo cp /var/www/drupal/sites/default/default.settings.php /var/www/drupal/sites/default/settings.php
   cat /sync_config_folder/drupal/settings.php > /var/www/drupal/sites/default/settings.php           #загрузим подготовленный конфиг
   chown -R root:www-data /var/www/drupal/  #дадим права пользователю www-data на папку drupal (пользователь www-data - дефолтный пользователь, под которым запущен php)
@@ -206,12 +207,12 @@ rm -rf /download_content
   chmod a+w /var/www/drupal/sites/default/files
   chmod a+w /var/www/drupal/sites/default/files/translations
  
-#заменим переменные подключения к базе даннах на наши значения для drupal
+## заменим переменные подключения к базе даннах на наши значения для drupal
   sed -i 's/%example_db_name%/'$myDrupalMysqlDbName'/g' /var/www/drupal/sites/default/settings.php
   sed -i 's/%example_db_user_name%/'$myDrupalMysqlUser'/g' /var/www/drupal/sites/default/settings.php
   sed -i 's/%example_db_password%/'$myDrupalMysqlPass'/g' /var/www/drupal/sites/default/settings.php
  
-#готовим файл с информацией о нашей vm
+## готовим файл с информацией о нашей vm
 echo "echo in info file"
 echo > /vagrant_up_info.txt
 echo >> /vagrant_up_info.txt
@@ -262,14 +263,14 @@ echo >> /vagrant_up_info.txt
 echo >> /vagrant_up_info.txt
  SHELL
  
- #перезагружаем виртуальную машину
+## перезагружаем виртуальную машину
   config.vm.provision :shell do |shell|                                                                                                    
    shell.privileged = true
    shell.reboot = true
  end
  
 ## stage 5
-#выводим сообщение после окончания работы скрипта
+## выводим сообщение после окончания работы скрипта
  config.vm.provision "shell", inline: <<-SHELL
   sed -i 's/%ip_address_list%/'"$(hostname -I)"'/g' /vagrant_up_info.txt
   cat /vagrant_up_info.txt
