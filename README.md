@@ -1,9 +1,9 @@
 # Руководство по настройке и установке на виртуальную машину Wordpress, Drupal и необходимое программное обеспечение.
  
-а. Доступ к "Wordpress" и "Drupal" осуществляется по вводу логина и пароля с редиректом, который отрабатывает по имени пользователя     
+## а. Доступ к "Wordpress" и "Drupal" осуществляется по вводу логина и пароля с редиректом, который отрабатывает по имени пользователя     
 Реквизиты будут указаны в конфце работы команды "vagrant up"
-б. Логины, пароли и имена баз данных генерируются во время работы скриптов
-в. Общая папка доступна, даже если виртуальная машина была выключена или перезагружена
+## б. Логины, пароли и имена баз данных генерируются во время работы скриптов
+## в. Общая папка доступна, даже если виртуальная машина была выключена или перезагружена
  
 Для РФ есть ряд ограничений, поэтому используем Tor или VPN.
 Wordpress и Drupal скачиваются из интернета, берутся актуальные версии.
@@ -52,13 +52,13 @@ Wordpress и Drupal скачиваются из интернета, берутс
  
 ---------------------------------------------------------------------------------------------------------------------------------------
  
-Vagrantfile:
+# Vagrantfile:
   
 #переменные
 LOCAL_HOST_PORT = "45678" #создаем переменную для проброса порта
 FRIENDLY_VM_NAME = "skillbox - web server v2" #имя виртуальной машины
  
-#stage 0
+## stage 0
 #настраиваем виртуальную машину
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"    #ставим ubuntu 20.04 x64
@@ -81,7 +81,7 @@ Vagrant.configure("2") do |config|
                "--type", "dvddrive", "--mtype", "readonly", "--medium", "additions", "--forceunmount"]
   end
  
-#stage 1
+## stage 1
 #устанавливаем, обновления и чистим систему
  config.vm.provision :shell, inline: <<-SHELL
   echo "Stage 1"
@@ -107,7 +107,7 @@ Vagrant.configure("2") do |config|
   shell.reboot = true
  end
  
-#stage 2
+## stage 2
 #линкуем шарную папку, даже после перезагрузки vm
  config.vm.provision :shell, inline: <<-SHELL
   echo "Stage 2"
@@ -115,7 +115,7 @@ Vagrant.configure("2") do |config|
   sudo ln -sfT /media/sf_sync_config_folder /sync_config_folder 
  SHELL
  
-#stage3
+## stage3
 #устанавливаем необходимые пакеты и производим их настройку
 #передадим переменную "LOCAL_HOST_PORT" в shell
  config.vm.provision :shell, env: {"LOCAL_HOST_PORT" => LOCAL_HOST_PORT}, inline: <<-SHELL
@@ -135,7 +135,7 @@ Vagrant.configure("2") do |config|
   wget -O /download_content/drupal_latest.tar.gz https://www.drupal.org/download-latest/tar.gz #скачиваем drupal (актуальный релиз)
   tar -xzf /download_content/drupal_latest.tar.gz -C /download_content                         #распаковываем
   mv /download_content/drupal-* /download_content/drupal                                       #переименуем папку
- 
+## stage 4 
 #создаем переменные для Wordpress
   myWordpressMysqlUser=wp_user_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -12 | head -n1)   #имя пользователя mysql для wodpress (имя пользователя не должно быть                                                                                                  больше 32 символов)
   myWordpressMysqlDbName=wp_db_id_$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1)  #имя базы данных mysql для wordpress
@@ -268,14 +268,14 @@ echo >> /vagrant_up_info.txt
    shell.reboot = true
  end
  
-#stage 5
+## stage 5
 #выводим сообщение после окончания работы скрипта
  config.vm.provision "shell", inline: <<-SHELL
   sed -i 's/%ip_address_list%/'"$(hostname -I)"'/g' /vagrant_up_info.txt
   cat /vagrant_up_info.txt
  SHELL
  
-#stage 6
+## stage 6
  config.vm.post_up_message = <<-HEREDOC
  
  
