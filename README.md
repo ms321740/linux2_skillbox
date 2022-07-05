@@ -54,8 +54,8 @@
  
 # Vagrantfile: 
 ### переменные
-    LOCAL_HOST_PORT = "45678"                                                           #создаем переменную для проброса порта
-    FRIENDLY_VM_NAME = "skillbox - web server v2"                                       #имя виртуальной машины
+    LOCAL_HOST_PORT = "45678"                              #создаем переменную для проброса порта
+    FRIENDLY_VM_NAME = "skillbox - web server v2"          #имя виртуальной машины
 ## stage 0
 ### настраиваем виртуальную машину
     Vagrant.configure("2") do |config|
@@ -157,7 +157,7 @@
 ### загружаем пароли для пользователей Wordpress и Drupal в htpasswd для apache
     echo "$myWordpressApache2Pass" | htpasswd -c -i /etc/apache2/.htpasswd Wordpress
     echo "$myDrupalApache2Pass" | htpasswd -i /etc/apache2/.htpasswd Drupal
-    rm /etc/apache2/sites-enabled/000-default.conf                                                       #удалим симлинк на дефолтовый конфиг 
+    rm /etc/apache2/sites-enabled/000-default.conf                                     #удалим симлинк на дефолтовый конфиг 
 ### установим наш конфиг для apache
     cp /sync_config_folder/apache/001_default.conf /etc/apache2/sites-available/001_default.conf         #скопируем подготовленный конфиг для wordpress из общей папки "sync_config_folder/apache"
     chmod -X /etc/apache2/sites-available/001_default.conf                                               #уберем артибут исполняемого файла
