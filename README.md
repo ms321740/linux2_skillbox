@@ -82,18 +82,18 @@
 ### устанавливаем обновления и чистим систему
     config.vm.provision :shell, inline: <<-SHELL
      echo "Stage 1"
-     sudo apt update                                                                 #обновим информацию о пакетах
-     sudo apt upgrade -y                                                             #обновим пакеты
-     sudo apt-get install linux-headers-$(uname -r) build-essential dkms -y          #ставим VBoxLinuxAdditions
+     sudo apt update                                                         #обновим информацию о пакетах
+     sudo apt upgrade -y                                                     #обновим пакеты
+     sudo apt-get install linux-headers-$(uname -r) build-essential dkms -y  #ставим VBoxLinuxAdditions
      sudo mkdir -p /mnt/cdrom
      sudo mount /dev/cdrom /mnt/cdrom
      cd /mnt/cdrom
      echo y | sudo sh ./VBoxLinuxAdditions.run                  
-     sudo apt autoclean                                                              #удалить неиспользуемые пакеты из кэша
-     sudo apt clean                                                                  #очистка кэша
-     sudo apt autoremove                                                             #удаление ненужных зависимостей
+     sudo apt autoclean                                                       #удалить неиспользуемые пакеты из кэша
+     sudo apt clean                                                           #очистка кэша
+     sudo apt autoremove                                                      #удаление ненужных зависимостей
      sudo apt autoremove --purge
-     sudo update-grub2                                                               #обновим загрузчик
+     sudo update-grub2                                                        #обновим загрузчик
     SHELL 
  ### перезагружаем виртуальную машину
     config.vm.provision :shell do |shell|
@@ -104,7 +104,7 @@
 ### линкуем шарную папку, даже после перезагрузки vm
     config.vm.provision :shell, inline: <<-SHELL
      echo "Stage 2"
-     sudo rm -rf /sync_config_folder                                                  #линкуем папку для доступа к ней после перезагрузки
+     sudo rm -rf /sync_config_folder                                #линкуем папку для доступа к ней после перезагрузки
      sudo ln -sfT /media/sf_sync_config_folder /sync_config_folder 
     SHELL 
 ## stage 3
@@ -144,8 +144,8 @@
     mysql -u root -e "flush privileges;" 
 ### переносим папки сайтов
 ### wordpress
-    mv /download_content/wordpress /var/www/wordpress      #переместим wordpress в папку хоста
-    chown -R root:www-data /var/www/wordpress/             #дадим права пользователю www-data на папку wordpress (пользователь www-data - дефолтный пользователь, под которым запущен php) 
+    mv /download_content/wordpress /var/www/wordpress   #переместим wordpress в папку хоста
+    chown -R root:www-data /var/www/wordpress/          #дадим права пользователю www-data на папку wordpress (пользователь www-data - дефолтный пользователь, под которым запущен php) 
 ### drupal
     sudo mkdir /var/www/drupal
     cd /download_content
@@ -162,7 +162,7 @@
     cp /sync_config_folder/apache/001_default.conf /etc/apache2/sites-available/001_default.conf         #скопируем подготовленный конфиг для wordpress из общей папки "sync_config_folder/apache"
     chmod -X /etc/apache2/sites-available/001_default.conf                                               #уберем артибут исполняемого файла
     ln -s /etc/apache2/sites-available/001_default.conf /etc/apache2/sites-enabled/001_default.conf      #сделаем симлинк для конфигурационного файла, активные конфигурации лежат в папке "sites-enabled"
-### подготовим конфигурационный фвйл для wordpress
+### подготовим конфигурационный файл для wordpress
     cp /sync_config_folder/wordpress/wp-config.php /var/www/wordpress/wp-config.php                      #копируем конфиг wordpress с преднастройками (шаблон)
     chmod -X /var/www/wordpress/wp-config.php                                                            #уберем артибут исполняемого файла
     wget -q -O- https://api.wordpress.org/secret-key/1.1/salt/ | grep 'define' | head >> /var/www/wordpress/wp-config.php    #получаем ключи и записываем в конфигурационный файл wordpress
