@@ -86,39 +86,38 @@
 ### устанавливаем обновления и чистим систему
    config.vm.provision :shell, inline: <<-SHELL
     echo "Stage 1"
-    sudo apt update                                                                                                      #обновим информацию о пакетах
-    sudo apt upgrade -y                                                                                                  #обновим пакеты
+    sudo apt update                                                                                     #обновим информацию о пакетах
+    sudo apt upgrade -y                                                                                 #обновим пакеты
  
-    sudo apt-get install linux-headers-$(uname -r) build-essential dkms -y #ставим VBoxLinuxAdditions
+    sudo apt-get install linux-headers-$(uname -r) build-essential dkms -y                              #ставим VBoxLinuxAdditions
     sudo mkdir -p /mnt/cdrom
     sudo mount /dev/cdrom /mnt/cdrom
     cd /mnt/cdrom
     echo y | sudo sh ./VBoxLinuxAdditions.run
   
-    sudo apt autoclean                                                                                                  #удалить неиспользуемые пакеты из кэша
-    sudo apt clean                                                                                                      #очистка кэша
-    sudo apt autoremove                                                                                                 #удаление ненужных зависимостей
+    sudo apt autoclean                                                                                  #удалить неиспользуемые пакеты из кэша
+    sudo apt clean                                                                                      #очистка кэша
+    sudo apt autoremove                                                                                 #удаление ненужных зависимостей
     sudo apt autoremove --purge
-    sudo update-grub2                                                                                                   #обновим загрузчик
-    SHELL
+    sudo update-grub2                                                                                   #обновим загрузчик
+   SHELL
  
  ### перезагружаем виртуальную машину
-  config.vm.provision :shell do |shell|                                                                                                    
-   shell.privileged = true
-   shell.reboot = true
-  end
+   config.vm.provision :shell do |shell|                                                                                                    
+    shell.privileged = true
+    shell.reboot = true
+   end
  
 ## stage 2
 ### линкуем шарную папку, даже после перезагрузки vm
   config.vm.provision :shell, inline: <<-SHELL
    echo "Stage 2"
-   sudo rm -rf /sync_config_folder                                                                                      #линкуем папку для доступа к ней после перезагрузки
+   sudo rm -rf /sync_config_folder                                                                      #линкуем папку для доступа к ней после перезагрузки
    sudo ln -sfT /media/sf_sync_config_folder /sync_config_folder 
   SHELL
  
 ## stage 3
-### устанавливаем необходимые пакеты и производим их настройку
-### передадим переменную "LOCAL_HOST_PORT" в shell
+### устанавливаем необходимые пакеты и производим их настройку, передадим переменную "LOCAL_HOST_PORT" в shell
   config.vm.provision :shell, env: {"LOCAL_HOST_PORT" => LOCAL_HOST_PORT}, inline: <<-SHELL
    echo "Stage 3"
    sudo apt install -y apache2                                                                                         #ставим apache
