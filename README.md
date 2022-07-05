@@ -249,7 +249,7 @@
      sed -i 's/%ip_address_list%/'"$(hostname -I)"'/g' /vagrant_up_info.txt
      cat /vagrant_up_info.txt
     SHELL
-### stage 6
+## stage 6
     config.vm.post_up_message = <<-HEREDOC   
     VM info file after config: /vagrant_up_info.txt
     p.s. 1. не успел решить вопрос с "php core/scripts/drupal quick-start"
